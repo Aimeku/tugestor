@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>TuGestor · Tu gestor fiscal, claro y sin líos</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- jsPDF -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+  <!-- App -->
+  <script type="module" src="main.js" defer></script>
+</head>
+
+<body>
+
+<!-- =========================
+     TOP BAR
+========================= -->
+<header class="topbar">
+  <div class="logo">Tu<span>Gestor</span></div>
+
+  <div class="top-actions">
+    <!-- BOTÓN NUEVO DE PERFIL FISCAL -->
+    <button id="perfilFiscalBtn" class="btn secondary" type="button" 
+            style="font-size: 12px; padding: 6px 12px;">
+      📋 Perfil Fiscal
+    </button>
+    
+    <span id="userEmail" class="user-email"></span>
+    <button id="loginBtn" class="btn primary" type="button">Login</button>
+  </div>
+</header>
+
+<!-- =========================
+     LANDING
+========================= -->
+<section id="landing" class="hero">
+  <h1>Tu gestor fiscal, claro y sin líos</h1>
+  <p>Controla facturas, IVA e IRPF sin complicaciones. Pensado para autónomos en España 🇪🇸</p>
+  <button id="ctaBtn" class="btn secondary" type="button">Empezar gratis</button>
+</section>
+
+<!-- =========================
+     DASHBOARD
+========================= -->
+<section id="dashboard" class="dashboard hidden">
+
+  <h2>Resumen de tu situación fiscal</h2>
+
+  <!-- =========================
+     SELECTOR DE PERIODO
+========================= -->
+  <div class="card">
+    <h3>Periodo fiscal</h3>
+
+    <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+      <select id="yearSelect" style="min-width:120px;"></select>
+
+      <select id="trimestreSelect" style="min-width:220px;">
+        <option value="T1">Trimestre 1 (Ene–Mar)</option>
+        <option value="T2">Trimestre 2 (Abr–Jun)</option>
+        <option value="T3">Trimestre 3 (Jul–Sep)</option>
+        <option value="T4">Trimestre 4 (Oct–Dic)</option>
+      </select>
+
+      <div style="margin-left:auto;">
+        <button
+          id="cerrarTrimestreBtn"
+          type="button"
+          style="
+            background:#fee2e2;
+            border:1px solid #ef4444;
+            color:#991b1b;
+            padding:6px 12px;
+            border-radius:6px;
+            cursor:pointer;
+          "
+        >
+          🔒 Cerrar trimestre
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <p style="font-size:13px;color:#6b7280;margin-top:12px;">
+    Los cálculos se actualizan automáticamente según el año y trimestre seleccionados.
+  </p>
+
+  <!-- =========================
+     NUEVA FACTURA (CON FECHA)
+========================= -->
+  <div class="card">
+    <h3>Nueva factura</h3>
+
+    <input id="concepto" placeholder="Concepto de la factura" />
+    <input id="base" type="number" placeholder="Base imponible (€)" />
+    
+    <!-- CAMPO DE FECHA AÑADIDO -->
+    <input id="fechaFactura" type="date" />
+
+    <select id="iva">
+      <option value="21">IVA 21%</option>
+      <option value="10">IVA 10%</option>
+      <option value="4">IVA 4%</option>
+    </select>
+
+    <select id="tipo">
+      <option value="emitida">Factura emitida</option>
+      <option value="recibida">Factura recibida</option>
+    </select>
+    
+    <select id="tipoCliente">
+  <option value="empresa">Empresa / Autónomo</option>
+  <option value="particular">Particular</option>
+</select>
+
+<input
+  id="clienteNombre"
+  placeholder="Nombre o razón social cliente"
+/>
+
+<input
+  id="clienteNif"
+  placeholder="NIF cliente (obligatorio si empresa)"
+/>
+
+    <button
+      id="addFacturaBtn"
+      class="btn primary"
+      type="button"
+    >
+      Guardar factura
+    </button>
+  </div>
+
+  <!-- =========================
+       MÉTRICAS IVA
+  ========================= -->
+  <div class="metrics">
+    <div class="metric-card">
+      <h4>IVA repercutido</h4>
+      <p id="ivaRepercutido">– €</p>
+    </div>
+
+    <div class="metric-card">
+      <h4>IVA soportado</h4>
+      <p id="ivaSoportado">– €</p>
+    </div>
+
+    <div class="metric-card highlight">
+      <h4>Resultado trimestre</h4>
+      <p id="ivaResultado">– €</p>
+      <span id="ivaEstado"></span>
+    </div>
+  </div>
+
+  <!-- =========================
+       MÉTRICAS IRPF
+  ========================= -->
+  <div class="metrics">
+    <div class="metric-card">
+      <h4>Ingresos</h4>
+      <p id="irpfIngresos">– €</p>
+    </div>
+
+    <div class="metric-card">
+      <h4>Gastos</h4>
+      <p id="irpfGastos">– €</p>
+    </div>
+
+    <div class="metric-card highlight">
+      <h4>IRPF trimestre (20%)</h4>
+      <p id="irpfResultado">– €</p>
+    </div>
+  </div>
+
+  <!-- =========================
+       RESUMEN ANUAL
+  ========================= -->
+  <div class="card">
+    <h3>Resumen anual</h3>
+
+    <div class="metrics">
+      <div class="metric-card">
+        <h4>IVA anual</h4>
+        <p id="ivaAnual">– €</p>
+      </div>
+
+      <div class="metric-card">
+        <h4>IRPF anual</h4>
+        <p id="irpfAnual">– €</p>
+      </div>
+
+      <div class="metric-card highlight">
+        <h4>Resultado fiscal</h4>
+        <p id="resultadoAnual">– €</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================
+       HISTÓRICOS
+  ========================= -->
+  <div class="card">
+  <h3>Histórico IVA por trimestre</h3>
+
+  <table id="ivaHistorico">
+    <thead>
+      <tr>
+        <th>Año</th>
+        <th>Trimestre</th>
+        <th>IVA repercutido</th>
+        <th>IVA soportado</th>
+        <th>Resultado</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+
+  <div class="card">
+  <h3>Histórico IRPF por trimestre</h3>
+
+  <table id="irpfHistorico">
+    <thead>
+      <tr>
+        <th>Año</th>
+        <th>Trimestre</th>
+        <th>Ingresos</th>
+        <th>Gastos</th>
+        <th>Rendimiento</th>
+        <th>IRPF</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+  <!-- =========================
+     LIBROS
+========================= -->
+<div class="card">
+  <h3>📘 Libro de ingresos</h3>
+
+  <p style="color:#6b7280;font-size:14px;margin-bottom:12px;">
+    El libro oficial se genera automáticamente a partir de las facturas emitidas del periodo seleccionado.
+  </p>
+
+  <button id="exportLibroIngresosBtn" class="btn secondary" type="button">
+    Exportar libro de ingresos (PDF)
+  </button>
+</div>
+
+<div class="card">
+  <h3>📕 Libro de gastos</h3>
+
+  <p style="color:#6b7280;font-size:14px;margin-bottom:12px;">
+    El libro oficial se genera automáticamente a partir de las facturas recibidas del periodo seleccionado.
+  </p>
+
+  <button id="exportLibroGastosBtn" class="btn secondary" type="button">
+    Exportar libro de gastos (PDF)
+  </button>
+</div>
+
+
+  <!-- =========================
+     MIS FACTURAS
+========================= -->
+  <div class="card">
+    <h3>Mis facturas</h3>
+    <button id="exportPdfBtn" class="btn secondary" type="button">
+      Exportar a PDF
+    </button>
+    <ul id="facturasList"></ul>
+  </div>
+
+</section>
+
+<footer class="footer">
+  © 2026 TuGestor
+</footer>
+
+</body>
+</html>
