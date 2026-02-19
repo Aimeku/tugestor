@@ -4,15 +4,11 @@ import { supabase } from "./supabase.js";
    LOGIN CON GOOGLE (SaaS PRO)
 ====================================================== */
 export async function login() {
-  const loginBtn = document.getElementById("loginBtn");
-
   try {
-    setLoadingState(true);
-
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: window.location.href,
+        redirectTo: "https://aimeku.github.io/tugestor/",
         queryParams: {
           prompt: "consent",
           access_type: "offline",
@@ -24,9 +20,9 @@ export async function login() {
   } catch (err) {
     console.error("Login error:", err.message);
     alert("No se pudo iniciar sesión con Google");
-    setLoadingState(false);
   }
 }
+
 
 /* ======================================================
    LOGOUT
